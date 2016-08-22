@@ -17,10 +17,6 @@ popd > /dev/null
 
 ln --symbolic --force "$WSO2DIR/repository/resources/security/$WSO2KEYSTORENAME" "$DIR/wso2keystore.jks"
 
-if [ ! -f "$DIR/auth.properties" ]; then
-	ln -s "$DIR/auth.properties.production" "$DIR/auth.properties"
-fi
-
 ln --symbolic --force "$DIR/auth.sh" "$ROOTDIR/auth.sh"
 
 LOGFILE="/var/log/mox/auth.log"
