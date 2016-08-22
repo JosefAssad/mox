@@ -45,9 +45,12 @@ echo "Creating log dir"
 sudo mkdir --parents "/var/log/mox"
 
 # Setup common config
-CONFIGFILENAME="mox.conf"
-cp --remove-destination "$DIR/$CONFIGFILENAME.base" "$DIR/$CONFIGFILENAME"
-sed --in-place --expression="s|\${domain}|${DOMAIN}|" "$DIR/$CONFIGFILENAME"
+CONFIGFILENAME="$DIR/mox.conf"
+cp --remove-destination "$CONFIGFILENAME.base" "$CONFIGFILENAME"
+sed --in-place --expression="s|\${domain}|${DOMAIN}|" "$CONFIGFILENAME"
+
+VARIABLESFILENAME="$DIR/variables.sh"
+cp --remove-destination "$VARIABLESFILENAME.base" "$VARIABLESFILENAME"
 
 # Setup apache virtualhost
 echo "Setting up Apache virtualhost"

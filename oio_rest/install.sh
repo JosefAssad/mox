@@ -101,6 +101,8 @@ fi
 
 MOX_OIO_CONFIG="$DIR/oio_rest/settings.py"
 sudo cp --remove-destination "$MOX_OIO_CONFIG.base" "$MOX_OIO_CONFIG"
+
+
 sed --in-place --expression="s|^rest.interface.*$|rest.interface = https://${DOMAIN}|" "${MOX_CONFIG}"
 
 DB_FOLDER="$MOXDIR/db"
