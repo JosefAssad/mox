@@ -45,9 +45,21 @@ echo "Creating log dir"
 sudo mkdir --parents "/var/log/mox"
 
 # Setup common config
-CONFIGFILENAME="$DIR/mox.conf"
-cp --remove-destination "$CONFIGFILENAME.base" "$CONFIGFILENAME"
-sed --in-place --expression="s|\${domain}|${DOMAIN}|" "$CONFIGFILENAME"
+MOX_CONFIG="$DIR/mox.conf"
+sudo cp --remove-destination "$MOX_CONFIG.base" "$MOX_CONFIG"
+
+MOX_OIO_CONFIG="$DIR/oio_rest/oio_rest/settings.py"
+sudo cp --remove-destination "$MOX_OIO_CONFIG.base" "$MOX_OIO_CONFIG"
+
+MOX_APACHE_CONFIG="$DIR/apache/mox.conf"
+sudo cp --remove-destination "$MOX_APACHE_CONFIG.base" "$MOX_APACHE_CONFIG"
+
+MOX_AUTH_CONFIG="$DIR/modules/auth/auth.properties"
+sudo cp --remove-destination "$MOX_AUTH_CONFIG.base" "$MOX_AUTH_CONFIG"
+
+
+
+sed --in-place --expression="s|\${domain}|${DOMAIN}|" "$MOX_CONFIG"
 
 VARIABLESFILENAME="$DIR/variables.sh"
 cp --remove-destination "$VARIABLESFILENAME.base" "$VARIABLESFILENAME"

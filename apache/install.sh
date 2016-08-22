@@ -29,7 +29,6 @@ fi
 
 # Setup apache site config
 CONFIGFILENAME="mox.conf"
-sudo cp --remove-destination "$DIR/$CONFIGFILENAME.base" "$DIR/$CONFIGFILENAME"
 sed --in-place --expression="s|\${domain}|${DOMAIN}|" "$DIR/$CONFIGFILENAME"
 sudo ln --symbolic --force "$DIR/$CONFIGFILENAME" "/etc/apache2/sites-available/$CONFIGFILENAME"
 sudo a2ensite mox
