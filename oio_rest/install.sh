@@ -26,6 +26,8 @@ done
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 MOXDIR="$DIR/.."
 
+MOX_CONFIG="$MOXDIR/mox.conf"
+MOX_OIO_CONFIG="$DIR/oio_rest/settings.py"
 
 
 ## System dependencies. These are the packages we need that are not present on a
@@ -97,9 +99,17 @@ if [ $CREATE_VIRTUALENV == 1 ]; then
 fi
 
 
-SETTINGS_FILENAME="oio_rest/settings.py"
-sudo cp --remove-destination "$DIR/$SETTINGS_FILENAME.base" "$DIR/$SETTINGS_FILENAME"
-sed --in-place --expression="s/$\{domain\}/${DOMAIN//\//\\/}/" "$DIR/$SETTINGS_FILENAME"
+MOX_OIO_CONFIG="$DIR/oio_rest/settings.py"
+sudo cp --remove-destination "$MOX_OIO_CONFIG.base" "$MOX_OIO_CONFIG"
+
+sed --in-place --expression="s|^rest.interface.*$|rest.interface = https://${DOMAIN}|" "${MOX_CONFIG}"
+
+# Update oio settings.py with new values
+sed -r --in-place --expression="s|^SAML_MOX_ENTITY_ID.*$|SAML_MOX_ENTITY_ID = 'https://${DOMAIN}'|" \
+                  --expression="s|^SAML_IDP_URL.*$|SAML_IDP_URL = 'https://${DOMAIN}:9443/services/wso2carbon-sts?wsdl'|" \
+                  --expression="s|^SAML_IDP_ENTITY_ID.*$|SAML_IDP_ENTITY_ID = '${DOMAIN}'|" \
+                  --expression="s|^SAML_IDP_CERTIFICATE.*$|SAML_IDP_CERTIFICATE = '${CERTIFICATE}'|" \
+                  "${MOX_OIO_CONFIG}"
 
 
 DB_FOLDER="$MOXDIR/db"
