@@ -5,14 +5,14 @@
 #
 if [ $(id -u) -ne 0 ]
 then
-	/bin/echo "This script must be executed as user 'root'"
-	/bin/echo "Exitiing..."
+	$ECHO "This script must be executed as user 'root'"
+	$ECHO "Exitiing..."
 	exit 250
 fi
 
 if [ -z "$NODEBUG" ]
 then
-	/bin/echo -e "DEBUG is on...\n"
+	$ECHO -e "DEBUG is on...\n"
 fi
 
 NOW=$(date +"%Y%m%d.%H%M%S")
@@ -33,16 +33,23 @@ SECRET_CONF=/opt/wso2is-5.0.0/repository/conf/security/secret-conf.properties
 MOX_AUTH_CONFIG="${MOXDIR}/modules/auth/auth.properties"
 MOX_OIO_CONFIG="${MOXDIR}/oio_rest/oio_rest/settings.py"
 
+ECHO="/bin/echo"
+CHMOD="/bin/chmod"
+RM="/bin/rm"
+CP="/bin/cp"
+CAT="/bin/cat"
+KEYTOOL="/usr/bin/keytool"
+
 
 function build_expect1_script() {
 	if [ -f /tmp/expect1 ]
-	then /bin/rm /tmp/expect1
+	then $RM /tmp/expect1
 	fi
 	if [ -e /tmp/expect1 ]
-	then /bin/echo "Cannot remove /tmp/expect1. Aborting..."
+	then $ECHO "Cannot remove /tmp/expect1. Aborting..."
 		exit 1
 	fi
-/bin/cat > /tmp/expect1 <<EOF
+$CAT > /tmp/expect1 <<EOF
 #!/usr/bin/expect -f
 
 spawn openssl pkcs12 -export -in ${CERTIFICATE} -inkey ${PRIVATE_KEY} \
@@ -70,24 +77,24 @@ while {true} {
 	}
 }
 EOF
-	/bin/chmod 500 /tmp/expect1
-	/bin/echo "Expect script /tmp/expect1 is created"
+	$CHMOD 500 /tmp/expect1
+	$ECHO "Expect script /tmp/expect1 is created"
 }
 
 
 
 function build_expect3_script() {
 	if [ -f /tmp/expect3 ]
-	then /bin/rm /tmp/expect3
+	then $RM /tmp/expect3
 	fi
 	if [ -e /tmp/expect3 ]
-	then /bin/echo "Cannot remove /tmp/expect3. Aborting..."
+	then $ECHO "Cannot remove /tmp/expect3. Aborting..."
 		exit 3
 	fi
-/bin/cat > /tmp/expect3 <<EOF
+$CAT > /tmp/expect3 <<EOF
 #!/usr/bin/expect -f
 
-spawn /usr/bin/keytool -importkeystore -srckeystore ${CERTIFICATE_PKCS12} -srcstoretype PKCS12 \
+spawn $KEYTOOL -importkeystore -srckeystore ${CERTIFICATE_PKCS12} -srcstoretype PKCS12 \
 		-destkeystore ${NEW_KEYSTORE} -deststoretype JKS \
 		-srcstorepass ${PASSOUT} -deststorepass ${PASSOUT}
 
@@ -108,24 +115,24 @@ while {true} {
 	}
 }
 EOF
-	/bin/chmod 500 /tmp/expect3
-	/bin/echo "Expect script /tmp/expect3 is created"
+	$CHMOD 500 /tmp/expect3
+	$ECHO "Expect script /tmp/expect3 is created"
 }
 
 
 
 function build_expect7_script() {
 	if [ -f /tmp/expect7 ]
-	then /bin/rm /tmp/expect7
+	then $RM /tmp/expect7
 	fi
 	if [ -e /tmp/expect7 ]
-	then /bin/echo "Cannot remove /tmp/expect7. Aborting..."
+	then $ECHO "Cannot remove /tmp/expect7. Aborting..."
 		exit 7
 	fi
-/bin/cat > /tmp/expect7 <<EOF
+$CAT > /tmp/expect7 <<EOF
 #!/usr/bin/expect -f
 
-spawn /usr/bin/keytool -import -alias ${KEY_ALIAS} -keystore ${CLIENT_KEYSTORE} \
+spawn $KEYTOOL -import -alias ${KEY_ALIAS} -keystore ${CLIENT_KEYSTORE} \
 	-file ${PUBLIC_KEY} -storepass ${PASSOUT}
 
 set timeout 5
@@ -155,14 +162,14 @@ while {true} {
 	}
 }
 EOF
-	/bin/chmod 500 /tmp/expect7
-	/bin/echo "Expect script /tmp/expect7 is created"
+	$CHMOD 500 /tmp/expect7
+	$ECHO "Expect script /tmp/expect7 is created"
 }
 
 
 
 
-/bin/echo "Timestamp: ${NOW}"
+# $ECHO "Timestamp: ${NOW}"
 
 # Setup variables
 
@@ -185,7 +192,6 @@ function prompt_var() {
 	QUIT=false
 	while ! $QUIT
 	do
-		/bin/echo
 		read -p "${promptmsg} [${default}]: " ANSWER
 		VALUE=${ANSWER:-$default}
 
@@ -194,14 +200,14 @@ function prompt_var() {
 			then
 				QUIT=true
 			else
-				/bin/echo "${errormsg}"
+				$ECHO "${errormsg}"
 			fi
 		else 
 			if [[ -n "${VALUE}" ]]
 			then
 				QUIT=true
 			else
-				/bin/echo "${errormsg}"
+				$ECHO "${errormsg}"
 			fi
 		fi
 	done
@@ -227,8 +233,8 @@ PUBLIC_KEY=${PUBLIC_KEY##*/}
 
 if [ -z "$NODEBUG" ]
 then
-	/bin/echo "CERTIFICATE_PKCS12: ${CERTIFICATE_PKCS12}"
-	/bin/echo "PUBLIC_KEY: ${PUBLIC_KEY}"
+	$ECHO "CERTIFICATE_PKCS12: ${CERTIFICATE_PKCS12}"
+	$ECHO "PUBLIC_KEY: ${PUBLIC_KEY}"
 fi
 
 
@@ -236,65 +242,65 @@ fi
 if [ -z "$NODEBUG" ]
 then
 # Extract convert certificate to pkcs12 format with alias KEY_ALIAS
-	/bin/echo
+	$ECHO
 # Because the certificate is encoded with no/empty password and the option -passin does not except an empty password
 # -passout will be the same as -password which in turn will submit the same password to the -passin parameter.
 # This is obiviously wrong.
 # To overcome it, we omit the password parameters and run the command with an expect script which takes care
 # supplying the correct password.
-#	/bin/echo openssl pkcs12 -export -in ${CERTIFICATE} -inkey ${PRIVATE_KEY} -name ${KEY_ALIAS} \
+#	$ECHO openssl pkcs12 -export -in ${CERTIFICATE} -inkey ${PRIVATE_KEY} -name ${KEY_ALIAS} \
 #		-out ${CERTIFICATE_PKCS12}
-	/bin/echo openssl pkcs12 -export -in ${CERTIFICATE} -inkey ${PRIVATE_KEY} -name ${KEY_ALIAS} \
+	$ECHO openssl pkcs12 -export -in ${CERTIFICATE} -inkey ${PRIVATE_KEY} -name ${KEY_ALIAS} \
 		-out ${CERTIFICATE_PKCS12}
 
 # Backup old keystore if present
 	if [[ -f "${NEW_KEYSTORE}" ]]
 	then
-		/bin/echo /bin/cp -p ${NEW_KEYSTORE} ${NEW_KEYSTORE}.${NOW}
+		$ECHO $CP -p ${NEW_KEYSTORE} ${NEW_KEYSTORE}.${NOW}
 	fi
 
 # Create new keystore
-	/bin/echo /usr/bin/keytool -importkeystore -srckeystore ${CERTIFICATE_PKCS12} -srcstoretype PKCS12 \
+	$ECHO $KEYTOOL -importkeystore -srckeystore ${CERTIFICATE_PKCS12} -srcstoretype PKCS12 \
 		-destkeystore ${NEW_KEYSTORE} -deststoretype JKS \
 		-srcstorepass ${PASSOUT} -deststorepass ${PASSOUT}
 
 # Backup old client-truststore
 	if [[ -f "${CLIENT_KEYSTORE}" ]]
 	then
-		/bin/echo /bin/cp -p ${CLIENT_KEYSTORE} ${CLIENT_KEYSTORE}.${NOW}
+		$ECHO $CP -p ${CLIENT_KEYSTORE} ${CLIENT_KEYSTORE}.${NOW}
 	fi
 
 # Export public key from new keystore certificate
-	/bin/echo /usr/bin/keytool -export -alias ${KEY_ALIAS} -keystore ${NEW_KEYSTORE} \
+	$ECHO $KEYTOOL -export -alias ${KEY_ALIAS} -keystore ${NEW_KEYSTORE} \
 	-storepass ${PASSOUT} -file ${PUBLIC_KEY}
 
 # If public key is already present in client-truststore it has to be removed
-	/bin/echo /usr/bin/keytool -list -alias ${KEY_ALIAS} -keystore ${CLIENT_KEYSTORE} -storepass ${PASSOUT} \| grep -qs "${KEY_ALIAS}"
+	$ECHO $KEYTOOL -list -alias ${KEY_ALIAS} -keystore ${CLIENT_KEYSTORE} -storepass ${PASSOUT} \| grep -qs "${KEY_ALIAS}"
 	if [ $? -ne 0 ]
 	then
-		/bin/echo "Removing current key ${KEY_ALIAS}"
-		/bin/echo /usr/bin/keytool -delete -alias ${KEY_ALIAS} -keystore ${CLIENT_KEYSTORE} -storepass ${PASSOUT}
+		$ECHO "Removing current key ${KEY_ALIAS}"
+		$ECHO $KEYTOOL -delete -alias ${KEY_ALIAS} -keystore ${CLIENT_KEYSTORE} -storepass ${PASSOUT}
 	fi
 
 # Import public key to client-truststore
-	/bin/echo /usr/bin/keytool -import -alias ${KEY_ALIAS} -keystore ${CLIENT_KEYSTORE} \
+	$ECHO $KEYTOOL -import -alias ${KEY_ALIAS} -keystore ${CLIENT_KEYSTORE} \
 	-file ${PUBLIC_KEY} -storepass ${PASSOUT}
 
 # Backup old configuration files
-	/bin/echo /bin/cp -p ${CARBON_XML} ${CARBON_XML}.${NOW}
-	/bin/echo /bin/cp -p ${SECRET_CONF} ${SECRET_CONF}.${NOW}
+	$ECHO $CP -p ${CARBON_XML} ${CARBON_XML}.${NOW}
+	$ECHO $CP -p ${SECRET_CONF} ${SECRET_CONF}.${NOW}
 
 echo "cert: ${CERTIFICATE}"
 
 # Update auth.properties with new values
-	/bin/echo sed -r -e "s|^security.keystore.path.*$|security.keystore.path = ${NEW_KEYSTORE}|" \
+	$ECHO sed -r -e "s|^security.keystore.path.*$|security.keystore.path = ${NEW_KEYSTORE}|" \
        -e "s|^security.keystore.password.*$|security.keystore.password = ${PASSOUT}|" \
        -e "s|^security.user.cert.alias.*$|security.user.cert.alias = ${KEY_ALIAS}|" \
        -e "s|^security.user.cert.password.*$|security.user.cert.password = ${PASSOUT}|" \
        ${MOX_AUTH_CONFIG} > ${MOX_AUTH_CONFIG}.$$
 
 # Update oio settings.py with new values
-	/bin/echo sed -r -e "s|^SAML_MOX_ENTITY_ID.*$|SAML_MOX_ENTITY_ID = 'https://${DOMAIN}'|" \
+	$ECHO sed -r -e "s|^SAML_MOX_ENTITY_ID.*$|SAML_MOX_ENTITY_ID = 'https://${DOMAIN}'|" \
        -e "s|^SAML_IDP_URL.*$|SAML_IDP_URL = 'https://${DOMAIN}:9443/services/wso2carbon-sts?wsdl'|" \
        -e "s|^SAML_IDP_ENTITY_ID.*$|SAML_IDP_ENTITY_ID = '${DOMAIN}'|" \
        -e "s|^SAML_IDP_CERTIFICATE.*$|SAML_IDP_CERTIFICATE = '${CERTIFICATE}'|" \
@@ -302,7 +308,6 @@ echo "cert: ${CERTIFICATE}"
 
 else
 # Extract convert certificate to pkcs12 format with alias KEY_ALIAS
-	/bin/echo step 1
 # Because the certificate is encoded with no/empty password and the option -passin does not allow an empty password
 # -passout will be the same as -password which in turn will submit the password as both the -passin and the -passout parameter.
 # This is obviously wrong.
@@ -310,7 +315,7 @@ else
 # supplying the correct password.
 	build_expect1_script
 
-#	/bin/echo openssl pkcs12 -export -in ${CERTIFICATE} -inkey ${PRIVATE_KEY} -name ${KEY_ALIAS} \
+#	$ECHO openssl pkcs12 -export -in ${CERTIFICATE} -inkey ${PRIVATE_KEY} -name ${KEY_ALIAS} \
 #		-out ${CERTIFICATE_PKCS12}
 #	openssl pkcs12 -export -in ${CERTIFICATE} -inkey ${PRIVATE_KEY} -name ${KEY_ALIAS} \
 #		-passout ${PASSOUT} -out ${CERTIFICATE_PKCS12}
@@ -320,61 +325,54 @@ else
 	/tmp/expect1
 
 # Backup old keystore if present
-	/bin/echo step 2
 	if [[ -f "${NEW_KEYSTORE}" ]]
 	then
-		/bin/cp -p ${NEW_KEYSTORE} ${NEW_KEYSTORE}.${NOW}
+		$CP -p ${NEW_KEYSTORE} ${NEW_KEYSTORE}.${NOW}
 	fi
 
 # Create new keystore
-	/bin/echo step 3
 # If the new keystore already exist, we have to overwrite it using terminal input to accept overwriting.
 # Hence, we use expect!
 	build_expect3_script
 
-#	/usr/bin/keytool -importkeystore -srckeystore ${CERTIFICATE_PKCS12} -srcstoretype PKCS12 \
+#	$KEYTOOL -importkeystore -srckeystore ${CERTIFICATE_PKCS12} -srcstoretype PKCS12 \
 #		-destkeystore ${NEW_KEYSTORE} -deststoretype JKS \
 #		-srcstorepass ${PASSOUT} -deststorepass ${PASSOUT}
 
 	/tmp/expect3
 
 # Backup old client-truststore
-	/bin/echo step 4
 	if [[ -f "${CLIENT_KEYSTORE}" ]]
 	then
-		/bin/cp -p ${CLIENT_KEYSTORE} ${CLIENT_KEYSTORE}.${NOW}
+		$CP -p ${CLIENT_KEYSTORE} ${CLIENT_KEYSTORE}.${NOW}
 	fi
 
 # Export public key from new keystore certificate
-	/bin/echo step 5
-	/usr/bin/keytool -export -alias ${KEY_ALIAS} -keystore ${NEW_KEYSTORE} \
+	$KEYTOOL -export -alias ${KEY_ALIAS} -keystore ${NEW_KEYSTORE} \
 	-storepass ${PASSOUT} -file ${PUBLIC_KEY}
 
 # If public key is already present in client-truststore it has to be removed
-	/bin/echo step 6
-	/usr/bin/keytool -list -alias ${KEY_ALIAS} -keystore ${CLIENT_KEYSTORE} -storepass ${PASSOUT} | grep -qs "${KEY_ALIAS}"
+	$KEYTOOL -list -alias ${KEY_ALIAS} -keystore ${CLIENT_KEYSTORE} -storepass ${PASSOUT} | grep -qs "${KEY_ALIAS}"
 	if [ $? -eq 0 ]
 	then
-		/bin/echo "Removing current key ${KEY_ALIAS}"
-		/usr/bin/keytool -delete -alias ${KEY_ALIAS} -keystore ${CLIENT_KEYSTORE} -storepass ${PASSOUT}
+		$ECHO "Removing current key ${KEY_ALIAS}"
+		$KEYTOOL -delete -alias ${KEY_ALIAS} -keystore ${CLIENT_KEYSTORE} -storepass ${PASSOUT}
 	fi
 
 # Import public key to client-truststore
-	/bin/echo step 7
 # This keytool command expects terminal input, so we have to run it via expect
 	build_expect7_script
 
-#	/bin/echo /usr/bin/keytool -import -alias ${KEY_ALIAS} -keystore ${CLIENT_KEYSTORE} \
+#	$ECHO $KEYTOOL -import -alias ${KEY_ALIAS} -keystore ${CLIENT_KEYSTORE} \
 #	-file ${PUBLIC_KEY} -storepass ${PASSOUT}
-#	/usr/bin/keytool -import -alias ${KEY_ALIAS} -keystore ${CLIENT_KEYSTORE} \
+#	$KEYTOOL -import -alias ${KEY_ALIAS} -keystore ${CLIENT_KEYSTORE} \
 #	-file ${PUBLIC_KEY} -storepass ${PASSOUT}
 
 	/tmp/expect7
 
 # Backup old configuration files
-	/bin/echo step 8
-	/bin/cp -p ${CARBON_XML} ${CARBON_XML}.${NOW}
-	/bin/cp -p ${SECRET_CONF} ${SECRET_CONF}.${NOW}
+	$CP -p ${CARBON_XML} ${CARBON_XML}.${NOW}
+	$CP -p ${SECRET_CONF} ${SECRET_CONF}.${NOW}
 fi
 
 
@@ -432,18 +430,18 @@ BEGIN				{
 ' ${CARBON_XML} > ${CARBON_XML}.$$
 if [ -z "$NODEBUG" ]
 then
-	/bin/echo
-	/bin/cat ${CARBON_XML}.$$
+	$ECHO
+	$CAT ${CARBON_XML}.$$
 else
-	/bin/cp -p ${CARBON_XML}.$$ ${CARBON_XML}
+	$CP -p ${CARBON_XML}.$$ ${CARBON_XML}
 fi
-/bin/rm ${CARBON_XML}.$$
+$RM ${CARBON_XML}.$$
 
 
 
 sed -r -e '/^keystore.identity/d' -e '/^keystore.trust/d' ${SECRET_CONF} > ${SECRET_CONF}.$$
 
-/bin/cat >> ${SECRET_CONF}.$$ <<-EOF
+$CAT >> ${SECRET_CONF}.$$ <<-EOF
 keystore.identity.location=${NEW_KEYSTORE}
 keystore.identity.type=JKS
 keystore.identity.alias=${KEY_ALIAS}
@@ -458,12 +456,12 @@ EOF
 
 if [ -z "$NODEBUG" ]
 then
-	/bin/echo
-	/bin/cat ${SECRET_CONF}.$$
+	$ECHO
+	$CAT ${SECRET_CONF}.$$
 else
-	/bin/cp -p ${SECRET_CONF}.$$ ${SECRET_CONF}
+	$CP -p ${SECRET_CONF}.$$ ${SECRET_CONF}
 fi
-/bin/rm ${SECRET_CONF}.$$
+$RM ${SECRET_CONF}.$$
 
 
 # Update auth.properties with new values
@@ -482,31 +480,31 @@ sed -r -e "s|^SAML_MOX_ENTITY_ID.*$|SAML_MOX_ENTITY_ID = 'https://${DOMAIN}'|" \
 
 if [ -z "$NODEBUG" ]
 then
-	/bin/echo
-	/bin/cat ${MOX_AUTH_CONFIG}.$$
-	/bin/echo
-	/bin/cat ${MOX_OIO_CONFIG}.$$
+	$ECHO
+	$CAT ${MOX_AUTH_CONFIG}.$$
+	$ECHO
+	$CAT ${MOX_OIO_CONFIG}.$$
 else
-	/bin/cp -p ${MOX_AUTH_CONFIG}.$$ ${MOX_AUTH_CONFIG}
-	/bin/cp -p ${MOX_OIO_CONFIG}.$$ ${MOX_OIO_CONFIG}
+	$CP -p ${MOX_AUTH_CONFIG}.$$ ${MOX_AUTH_CONFIG}
+	$CP -p ${MOX_OIO_CONFIG}.$$ ${MOX_OIO_CONFIG}
 fi
-/bin/rm ${MOX_AUTH_CONFIG}.$$
-/bin/rm ${MOX_OIO_CONFIG}.$$
+$RM ${MOX_AUTH_CONFIG}.$$
+$RM ${MOX_OIO_CONFIG}.$$
 
 
 
 # Clean up temporary files
 if [ -n "$NODEBUG" ]
 then
-	/bin/echo "Removing temporary files: /tmp/expect[137] ${CERTIFICATE_PKCS12} ${PUBLIC_KEY}"
-	/bin/rm  -f /tmp/expect[137] ${CERTIFICATE_PKCS12} ${PUBLIC_KEY}
+	$ECHO "Removing temporary files: /tmp/expect[137] ${CERTIFICATE_PKCS12} ${PUBLIC_KEY}"
+	$RM  -f /tmp/expect[137] ${CERTIFICATE_PKCS12} ${PUBLIC_KEY}
 fi
 
 
 
 if [ -z "$NODEBUG" ]
 then
-	/bin/echo -e "\n\n\nDEBUG is on...\nTo execute, set NODEBUG, i.d.:\nNODEBUG=x ${0}\n"
+	$ECHO -e "\n\n\nDEBUG is on...\nTo execute, set NODEBUG, i.d.:\nNODEBUG=x ${0}\n"
 fi
 
 # Vim: set all laststatus=2 statusline=Current\ File:\ %F :

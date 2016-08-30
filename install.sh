@@ -44,6 +44,7 @@ fi
 echo "Creating log dir"
 sudo mkdir --parents "/var/log/mox"
 
+
 # Config files that may be altered during install should be copied from git, but not themselves be present there
 MOX_CONFIG="$DIR/mox.conf"
 cp --remove-destination "$MOX_CONFIG.base" "$MOX_CONFIG"
@@ -59,21 +60,6 @@ cp --remove-destination "$OIO_REST_CONFIG.base" "$OIO_REST_CONFIG"
 
 APACHE_CONFIG="$DIR/apache/mox.conf"
 cp --remove-destination "$APACHE_CONFIG.base" "$APACHE_CONFIG"
-
-
-# Setup common config
-MOX_CONFIG="$DIR/mox.conf"
-sudo cp --remove-destination "$MOX_CONFIG.base" "$MOX_CONFIG"
-
-MOX_OIO_CONFIG="$DIR/oio_rest/oio_rest/settings.py"
-sudo cp --remove-destination "$MOX_OIO_CONFIG.base" "$MOX_OIO_CONFIG"
-
-MOX_APACHE_CONFIG="$DIR/apache/mox.conf"
-sudo cp --remove-destination "$MOX_APACHE_CONFIG.base" "$MOX_APACHE_CONFIG"
-
-MOX_AUTH_CONFIG="$DIR/modules/auth/auth.properties"
-sudo cp --remove-destination "$MOX_AUTH_CONFIG.base" "$MOX_AUTH_CONFIG"
-
 
 
 sed --in-place --expression="s|\${domain}|${DOMAIN}|" "$MOX_CONFIG"

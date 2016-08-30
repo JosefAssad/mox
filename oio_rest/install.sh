@@ -28,7 +28,9 @@ MOXDIR="$DIR/.."
 
 MOX_CONFIG="$MOXDIR/mox.conf"
 MOX_OIO_CONFIG="$DIR/oio_rest/settings.py"
+LOGFILE="$DIR/install.log"
 
+truncate --size=0 $LOGFILE
 
 ## System dependencies. These are the packages we need that are not present on a
 ## fresh OS install.
@@ -90,7 +92,7 @@ if [ $CREATE_VIRTUALENV == 1 ]; then
 		source $VIRTUALENV/bin/activate
 
 		pushd "$DIR"
-		python setup.py develop
+		python setup.py develop > $LOGFILE
 		popd
 
 		echo "Stopping virtual environment"
