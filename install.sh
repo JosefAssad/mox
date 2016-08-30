@@ -125,16 +125,12 @@ $DIR/modules/json/install.sh
 $DIR/modules/agent/install.sh
 $DIR/modules/auth/install.sh
 
-# Install servlet
-echo "Installing Tomcat webservices"
-$DIR/servlets/install.sh
-$DIR/servlets/MoxDocumentUpload/install.sh "$DOMAIN"
-
 # Compile agents
 echo "Installing Agents"
 $DIR/agents/MoxTabel/install.sh
 $DIR/agents/MoxRestFrontend/install.sh
 $DIR/agents/MoxDocumentDownload/install.sh
+$DIR/agents/MoxDocumentUpload/install.sh
 $DIR/agents/MoxTest/install.sh
 
 JAVA_HOME="$OLD_JAVA_HOME"
