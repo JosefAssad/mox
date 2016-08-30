@@ -88,12 +88,12 @@ if [ $CREATE_VIRTUALENV == 1 ]; then
 		echo "Failed creating virtual environment!"
 		exit 1
 	else
-		echo "Virtual environment created. Starting..."
+		echo "Virtual environment created. Starting install"
 		source $VIRTUALENV/bin/activate
 
-		pushd "$DIR"
-		python setup.py develop > $LOGFILE
-		popd
+		pushd "$DIR" > /dev/null
+		python setup.py develop 2>$LOGFILE 1>$LOGFILE
+		popd > /dev/null
 
 		echo "Stopping virtual environment"
 		deactivate

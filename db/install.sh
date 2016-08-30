@@ -6,7 +6,7 @@ echo "DIR=$DIR"
 echo "Installing database dependencies"
 SYSTEM_PACKAGES=$(cat "$DIR/SYSTEM_DEPENDENCIES")
 for package in "${SYSTEM_PACKAGES[@]}"; do
-	sudo apt-get -y install $package
+	sudo apt-get --yes --quiet install $package
 done
 
 # Install pgtap - unit test framework
@@ -16,9 +16,9 @@ sudo pgxn install pgtap
 # We depend on a specific fork, which supports setting of message headers
 # https://github.com/duncanburke/pg_amqp.git
 git clone https://github.com/duncanburke/pg_amqp.git /tmp/pg_amqp
-pushd /tmp/pg_amqp
+pushd /tmp/pg_amqp > /dev/null
 sudo make install
-popd
+popd > /dev/null
 rm -rf /tmp/pg_amqp
 
 # Set authentication method to 'md5' (= password, not peer)
