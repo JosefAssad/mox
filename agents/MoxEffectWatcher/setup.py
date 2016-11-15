@@ -26,6 +26,7 @@ setup(
         'pylru',
         'requests',
         'SQLAlchemy',
+        'pytz',
 
         # These are to satisfy the requests module with SSL support
         'pyOpenSSL',

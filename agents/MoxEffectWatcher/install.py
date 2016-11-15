@@ -3,7 +3,6 @@
 import argparse
 import os
 import sys
-import shutil
 import subprocess
 from socket import gethostname
 from installutils import Config, VirtualEnv
@@ -36,10 +35,16 @@ args = parser.parse_args()
 
 # ------------------------------------------------------------------------------
 
+logfilename = "%s/install.log" % DIR
+fp = open(logfilename, 'w')
+fp.close()
+
 virtualenv = VirtualEnv(DIR + "/python-env")
-created = virtualenv.create(args.overwrite_virtualenv, args.keep_virtualenv)
+created = virtualenv.create(args.overwrite_virtualenv, args.keep_virtualenv, logfilename)
 if created:
-    virtualenv.run("python " + DIR + "/setup.py develop")
+    print "Running setup.py"
+    virtualenv.run(logfilename, "python " + DIR + "/setup.py develop")
+
     fp = open("%s/lib/python2.7/site-packages/mox.pth" % virtualenv.environment_dir, "w")
     fp.write("%s/modules/python/mox" % MOXDIR)
     fp.close()
@@ -69,11 +74,11 @@ for (argkey, confkey) in sorted(config_map.iteritems()):
         # Not good. We must have these values. Prompt the user
         default = defaults.get(argkey)
         if default is not None:
-            value = raw_input("%s = [%s]" % (confkey, default))
-            if not value:
+            value = raw_input("%s = [%s] " % (confkey, default)).strip()
+            if len(value) == 0:
                 value = default
         else:
-            value = raw_input("%s = " % confkey)
+            value = raw_input("%s = " % confkey).strip()
     else:
         print "%s = %s" % (confkey, value)
     config.set(confkey, value)
