@@ -13,6 +13,10 @@ DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
 MOXDIR = os.path.abspath(DIR + "/../..")
 MODULES_DIR = os.path.abspath(MOXDIR + "/modules/python")
 
+defaults = {
+    'rest_host':"http://%s" % domain
+}
+
 parser = argparse.ArgumentParser(description='Install MoxEffectWatcher')
 
 parser.add_argument('-y', '--overwrite-virtualenv', action='store_true')
@@ -24,7 +28,7 @@ parser.add_argument('--amqp-pass', action='store')
 parser.add_argument('--amqp-queue-in', action='store')
 parser.add_argument('--amqp-queue-out', action='store')
 
-parser.add_argument('--rest-host', action='store', default="http://%s" % domain)
+parser.add_argument('--rest-host', action='store')
 parser.add_argument('--rest-user', action='store')
 parser.add_argument('--rest-pass', action='store')
 
@@ -36,7 +40,9 @@ virtualenv = VirtualEnv(DIR + "/python-env")
 created = virtualenv.create(args.overwrite_virtualenv, args.keep_virtualenv)
 if created:
     virtualenv.run("python " + DIR + "/setup.py develop")
-    shutil.copyfile(MOXDIR + "/modules/python/mox/mox.pth", virtualenv.environment_dir + "/lib/python2.7/site-packages/mox.pth")
+    fp = open("%s/lib/python2.7/site-packages/mox.pth" % virtualenv.environment_dir, "w")
+    fp.write("%s/modules/python/mox" % MOXDIR)
+    fp.close()
 
 # ------------------------------------------------------------------------------
 
@@ -54,13 +60,20 @@ config_map = {
 }
 config = Config(configfile)
 
+print "\n"
 for (argkey, confkey) in sorted(config_map.iteritems()):
     value = None
     if hasattr(args, argkey):
         value = getattr(args, argkey)
     if value is None:
         # Not good. We must have these values. Prompt the user
-        value = raw_input("%s = " % confkey)
+        default = defaults.get(argkey)
+        if default is not None:
+            value = raw_input("%s = [%s]" % (confkey, default))
+            if not value:
+                value = default
+        else:
+            value = raw_input("%s = " % confkey)
     else:
         print "%s = %s" % (confkey, value)
     config.set(confkey, value)
