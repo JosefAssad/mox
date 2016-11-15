@@ -34,3 +34,6 @@ class Virkning(object):
 
     def __str__(self):
         return 'Virkning: %s - %s' % (self.from_time, self.to_time)
+
+    def compare_time(self, other):
+        return self.from_time == other.from_time and self.to_time == other.to_time
