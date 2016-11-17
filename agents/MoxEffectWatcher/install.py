@@ -10,7 +10,6 @@ from installutils import Config, VirtualEnv
 domain = gethostname()
 DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
 MOXDIR = os.path.abspath(DIR + "/../..")
-MODULES_DIR = os.path.abspath(MOXDIR + "/modules/python")
 
 defaults = {
     'rest_host':"http://%s" % domain
@@ -44,10 +43,7 @@ created = virtualenv.create(args.overwrite_virtualenv, args.keep_virtualenv, log
 if created:
     print "Running setup.py"
     virtualenv.run(logfilename, "python " + DIR + "/setup.py develop")
-
-    fp = open("%s/lib/python2.7/site-packages/mox.pth" % virtualenv.environment_dir, "w")
-    fp.write("%s/modules/python/mox" % MOXDIR)
-    fp.close()
+    virtualenv.add_moxlib_pointer(MOXDIR)
 
 # ------------------------------------------------------------------------------
 

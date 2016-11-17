@@ -11,7 +11,6 @@ from installutils import Config, VirtualEnv
 domain = gethostname()
 DIR = os.path.dirname(os.path.realpath(sys.argv[0]))
 MOXDIR = os.path.abspath(DIR + "/../..")
-MODULES_DIR = os.path.abspath(MOXDIR + "/modules/python")
 
 parser = argparse.ArgumentParser(description='Install MoxWiki')
 
@@ -35,11 +34,16 @@ args = parser.parse_args()
 
 # ------------------------------------------------------------------------------
 
+logfilename = "%s/install.log" % DIR
+fp = open(logfilename, 'w')
+fp.close()
+
 virtualenv = VirtualEnv(DIR + "/python-env")
-created = virtualenv.create(args.overwrite_virtualenv, args.keep_virtualenv)
+created = virtualenv.create(args.overwrite_virtualenv, args.keep_virtualenv, logfilename)
 if created:
-    virtualenv.run("python " + DIR + "/setup.py develop")
-    shutil.copyfile(MOXDIR + "/modules/python/mox/mox.pth", virtualenv.environment_dir + "/lib/python2.7/site-packages/mox.pth")
+    print "Running setup.py"
+    virtualenv.run(logfilename, "python " + DIR + "/setup.py develop")
+    virtualenv.add_moxlib_pointer(MOXDIR)
 
 # ------------------------------------------------------------------------------
 
